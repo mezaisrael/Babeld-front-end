@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import logo from './logo.svg';
-import {TweetForm, TweetList} from './tweets';
+import {TweetsComponent} from './tweets';
 import './App.css';
 
 
@@ -10,8 +10,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <div>
-          <TweetForm/>
-          <TweetList/>
+          <TweetsComponent/>
         </div>
       </header>
     </div>
