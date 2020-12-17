@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {apiTweetCrete, apiTweetList} from './lookup'
+import {apiTweetAction, apiTweetCrete, apiTweetList} from './lookup'
 
 
 export function TweetsComponent(){
@@ -66,7 +66,7 @@ export function TweetList(props) {
     <Tweet
       tweet={tweet}
       key={tweet.id}
-      className='my-5 py-5 border bg-white text-dark'
+      className=''
     />
   )
   
@@ -82,6 +82,20 @@ export function ActionBtn(props) {
   return <button className={className} onClick={onClick}>{display}</button>
 }
 
+export function ParentTweet(props) {
+  const {tweet} = props
+  console.log(tweet)
+  return tweet.parent ?
+    <div className='row'>
+      <div className='col-11 mx-auto p-3 border rounded'>
+        <p className='mb-0 text-muted small'>Retweet</p>
+        <Tweet
+          tweet={tweet.parent}
+          className={' '}/>
+      </div>
+    </div>
+    : null
+}
 
 export function Tweet(props){
   const { tweet } = props
@@ -90,21 +104,18 @@ export function Tweet(props){
   // lets us know if the the user liked this particular tweet
   const [likeBtnIsClicked, setLikeBtnIsCliked] = useState(tweet.userLiked)
 
-  const className = props.className ?  props.className : 'col-10 mx-auto col-md-6'
 
   // callback to handle liking tweet
-  const handleToogleLikeBtn = () => {
-    setLikeBtnIsCliked(!likeBtnIsClicked)
-
-    let options = {
-      method: 'POST',
-      body: {'action': likeBtnIsClicked ? 'like' : 'unlike'}
-    }
-    // console.log(options)
-
-    fetch('http://localhost:8000/api/tweets/action/', options)
-      .then(res => res.json())
-      .then(json => console.log(json))
+  const handleToogleLikeBtn = (event) => {
+    let action = likeBtnIsClicked ? 'unlike' : 'like'
+    event.preventDefault()
+    apiTweetAction(tweet.id, action, (response, status) => {
+      console.log(response, status)
+      if (status === 200) {
+        setLikes(response.likes)
+        setLikeBtnIsCliked(!likeBtnIsClicked)
+      }
+    });
   }
 
   // callback to handle sharing tweet
@@ -112,21 +123,28 @@ export function Tweet(props){
     console.log('retweet')
   }
 
+  const className = props.className ?  props.className : 'col-10 mx-auto col-md-6'
+
   return (
-    <div>
-      <p className={className}>{tweet.id} - {tweet.content}</p>
-      <ActionBtn
-        tweet={tweet}
-        type='like'
-        display={`${likes} Likes`}
-        onClick={handleToogleLikeBtn}
-      />
-      <ActionBtn
-        tweet={tweet}
-        type='retweet'
-        display='Retweet'
-        onClick={handleRetweetBtn}
-      />
+    <div className={className}>
+      <div>
+        <p>{tweet.content}</p>
+        <ParentTweet tweet={tweet}/>
+      </div>
+      <div className='btn btn-group'>
+        <ActionBtn
+          tweet={tweet}
+          type='like'
+          display={`${likes} Likes`}
+          onClick={handleToogleLikeBtn}
+        />
+        <ActionBtn
+          tweet={tweet}
+          type='retweet'
+          display='Retweet'
+          onClick={handleRetweetBtn}
+        />
+      </div>
     </div>
   )
 }
