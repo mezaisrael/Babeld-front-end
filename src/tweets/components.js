@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {loadTweets} from '../lookup'
+import {apiTweetCrete, apiTweetList} from './lookup'
 
 
 export function TweetsComponent(){
@@ -7,48 +7,47 @@ export function TweetsComponent(){
   const textAreaRef = React.createRef()
 
   useEffect(() => {
-  const myCallBack = (res,status) => {
-    if (status === 200) {
-      setTweets(res)
-    } else {
-      alert('There was an error')
+    const handleTweetListLookup = (res,status) => {
+      console.log('loading tweets')
+      if (status === 200) {
+        if (res.length !== tweets.length) {
+          setTweets(res)
+        }
+      } else {
+        alert('There was an error')
+      }
     }
-  }
-    loadTweets(myCallBack)
 
-  }, [])
+    apiTweetList(handleTweetListLookup)
+  }, [tweets])
 
   const handleSubmit = (event) => {
     event.preventDefault()
     const newVal = textAreaRef.current.value
-    console.log(newVal)
 
-    // make post reqeus to create new tweet
-    // fetch('http://localhost:8000/api/tweets/')
-    //   .then(res => {res.json()})
-    //   .then((json) => {
-    //     console.log(json)
-    //     const newTweetObj = {id: json.id, content: json.content, likes: 0}
-    //     // TODO send post
-    //     fetch('http://localhost:8000/api/tweets/create/')
-    //       .then((res) => {console.log(res.json())})
+    // backend api request
+    apiTweetCrete(newVal, (response,status) => {
+      console.log('response', response)
+      if (status === 201) {
+        let tempTweets = [...tweets]
+        tempTweets.unshift(response)
+        console.log('tempTweets', tempTweets)
+        setTweets(tempTweets)
+      } else {
+        console.log(response)
+        alert('An error occured')
 
-    //     // setTweets(newTweet)
-    //   })
+      }
+    })
 
-    // reload tweets
-    fetch('http://localhost:8000/api/tweets/')
-      .then(res => res.json())
-      .then(json => setTweets(json))
-
-    textAreaRef.current.value = ''
+    textAreaRef.current.value = ""
   }
 
   return (
     <div>
       <div className='col-12 mb-3 mt-4'>
-        <form onSubmit={handleSubmit} required={true} >
-          <textarea id="" name="" ref={textAreaRef}></textarea>
+        <form onSubmit={handleSubmit}>
+          <textarea id="" name="" ref={textAreaRef} required={true}></textarea>
           <button type='submit' className='btn btn-primary my-3'>tweet</button>
         </form>
       </div>
@@ -86,25 +85,29 @@ export function ActionBtn(props) {
 
 export function Tweet(props){
   const { tweet } = props
-  //TODO
+  // how many likes this tweets has
   const [likes, setLikes] = useState(tweet.likes ? tweet.likes : 0)
-  const [likeBtcIsClicked, setLikeBtnIsCliked] = useState(tweet.userLiked)
+  // lets us know if the the user liked this particular tweet
+  const [likeBtnIsClicked, setLikeBtnIsCliked] = useState(tweet.userLiked)
 
   const className = props.className ?  props.className : 'col-10 mx-auto col-md-6'
 
+  // callback to handle liking tweet
   const handleToogleLikeBtn = () => {
-    setLikeBtnIsCliked(!likeBtcIsClicked)
+    setLikeBtnIsCliked(!likeBtnIsClicked)
 
     let options = {
       method: 'POST',
-      body: {'action': likeBtcIsClicked ? 'like' : 'unlike'}
+      body: {'action': likeBtnIsClicked ? 'like' : 'unlike'}
     }
+    // console.log(options)
 
     fetch('http://localhost:8000/api/tweets/action/', options)
       .then(res => res.json())
       .then(json => console.log(json))
   }
 
+  // callback to handle sharing tweet
   const handleRetweetBtn = () => {
     console.log('retweet')
   }
