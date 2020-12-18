@@ -36,12 +36,12 @@ export function TweetsComponent(){
       } else {
         console.log(response)
         alert('An error occured')
-
       }
     })
 
     textAreaRef.current.value = ""
   }
+
 
   return (
     <div>
@@ -51,7 +51,7 @@ export function TweetsComponent(){
           <button type='submit' className='btn btn-primary my-3'>tweet</button>
         </form>
       </div>
-      <TweetList tweets={tweets}/>
+      <TweetList tweets={tweets} setTweets={setTweets}/>
     </div>
   )
 }
@@ -59,14 +59,27 @@ export function TweetsComponent(){
 
 export function TweetList(props) {
   // const [tweets, setTweets] = useState([])
-  const {tweets} = props
+  const {tweets, setTweets} = props
 
+  const handleRetweetHelper = (tweet) => {
+    let action = 'retweet'
+    apiTweetAction(tweet.id, action, (response, status) => {
+      console.log(response, status)
+      if (status === 201) {
+        let currTweets = [...tweets]
+        currTweets.unshift(response)
+        setTweets(currTweets)
+        // console.log(response)
+      }
+    });
+  }
 
   let tweetsComp = tweets.map(tweet =>
     <Tweet
       tweet={tweet}
       key={tweet.id}
       className=''
+      retweetHelper={handleRetweetHelper}
     />
   )
   
@@ -86,7 +99,7 @@ export function ParentTweet(props) {
   const {tweet} = props
   console.log(tweet)
   return tweet.parent ?
-    <div className='row'>
+    <div className='row p-5'>
       <div className='col-11 mx-auto p-3 border rounded'>
         <p className='mb-0 text-muted small'>Retweet</p>
         <Tweet
@@ -98,17 +111,17 @@ export function ParentTweet(props) {
 }
 
 export function Tweet(props){
-  const { tweet } = props
+  console.log(props)
+  const { tweet, retweetHelper } = props
   // how many likes this tweets has
   const [likes, setLikes] = useState(tweet.likes ? tweet.likes : 0)
   // lets us know if the the user liked this particular tweet
   const [likeBtnIsClicked, setLikeBtnIsCliked] = useState(tweet.userLiked)
 
-
   // callback to handle liking tweet
   const handleToogleLikeBtn = (event) => {
-    let action = likeBtnIsClicked ? 'unlike' : 'like'
     event.preventDefault()
+    let action = likeBtnIsClicked ? 'unlike' : 'like'
     apiTweetAction(tweet.id, action, (response, status) => {
       console.log(response, status)
       if (status === 200) {
@@ -119,19 +132,21 @@ export function Tweet(props){
   }
 
   // callback to handle sharing tweet
-  const handleRetweetBtn = () => {
-    console.log('retweet')
+  const handleRetweet = (event) => {
+    event.preventDefault()
+    // console.log(retweetHelper)
+    retweetHelper(tweet)
   }
 
-  const className = props.className ?  props.className : 'col-10 mx-auto col-md-6'
+  // const className = props.className ?  props.className : 'col-10 mx-auto col-md-6'
 
   return (
-    <div className={className}>
+    <div className='card bg-dark'>
       <div>
         <p>{tweet.content}</p>
         <ParentTweet tweet={tweet}/>
       </div>
-      <div className='btn btn-group'>
+      <div className='btn btn-group mb-4'>
         <ActionBtn
           tweet={tweet}
           type='like'
@@ -142,7 +157,7 @@ export function Tweet(props){
           tweet={tweet}
           type='retweet'
           display='Retweet'
-          onClick={handleRetweetBtn}
+          onClick={handleRetweet}
         />
       </div>
     </div>
