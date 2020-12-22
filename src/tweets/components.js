@@ -2,13 +2,13 @@ import React, {useState, useEffect} from 'react';
 import {apiTweetAction, apiTweetCrete, apiTweetList} from './lookup'
 
 
-export function TweetsComponent(){
+export function TweetsComponent(props){
   const [tweets, setTweets] = useState([])
   const textAreaRef = React.createRef()
+  const root = document.getElementById('root')
 
   useEffect(() => {
     const handleTweetListLookup = (res,status) => {
-      console.log('loading tweets')
       if (status === 200) {
         if (res.length !== tweets.length) {
           setTweets(res)
@@ -18,8 +18,8 @@ export function TweetsComponent(){
       }
     }
 
-    apiTweetList(handleTweetListLookup)
-  }, [tweets])
+    apiTweetList(root.dataset.username, handleTweetListLookup)
+  }, [tweets, root.dataset.username])
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -97,12 +97,12 @@ export function ActionBtn(props) {
 
 export function ParentTweet(props) {
   const {tweet} = props
-  console.log(tweet)
   return tweet.parent ?
-    <div className='row p-5'>
+    <div className='row pl-5 pt-5 pb-5'>
       <div className='col-11 mx-auto p-3 border rounded'>
         <p className='mb-0 text-muted small'>Retweet</p>
         <Tweet
+          hideActions
           tweet={tweet.parent}
           className={' '}/>
       </div>
@@ -111,8 +111,7 @@ export function ParentTweet(props) {
 }
 
 export function Tweet(props){
-  console.log(props)
-  const { tweet, retweetHelper } = props
+  const { tweet, retweetHelper, hideActions } = props
   // how many likes this tweets has
   const [likes, setLikes] = useState(tweet.likes ? tweet.likes : 0)
   // lets us know if the the user liked this particular tweet
@@ -142,10 +141,11 @@ export function Tweet(props){
 
   return (
     <div className='card bg-dark'>
-      <div>
+      <div className='mt-4'>
         <p>{tweet.content}</p>
         <ParentTweet tweet={tweet}/>
       </div>
+      { !hideActions &&
       <div className='btn btn-group mb-4'>
         <ActionBtn
           tweet={tweet}
@@ -160,6 +160,7 @@ export function Tweet(props){
           onClick={handleRetweet}
         />
       </div>
+      }
     </div>
   )
 }

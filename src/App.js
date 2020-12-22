@@ -5,7 +5,8 @@ import {Navbar} from './navbar';
 import './App.css';
 
 
-function App() {
+function App(props) {
+  const {data} = props
 
   return (
     <div className="App">

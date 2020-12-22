@@ -12,7 +12,16 @@ export function apiTweetAction(tweetId, action, callBack){
   )
 }
 
-export function apiTweetList(callBack) {
-  backendLookup('GET', '/tweets/', callBack)
+export function apiTweetDetail(tweetId, callBack) {
+  backendLookup('GET', `/tweets/?tweetid=${tweetId}`, callBack)
+}
+
+export function apiTweetList(username, callBack) {
+  let endpoint = "/tweets/"
+  if (username) {
+    endpoint = `/tweets/?username=${username}`
+  }
+  console.log('loading tweets for user', username)
+  backendLookup('GET',endpoint, callBack)
 }
 

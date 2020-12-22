@@ -4,9 +4,12 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+const root = document.getElementById('root')
+// let data = {...root.dataset}
+
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <App data={{...root.dataset}}/>
   </React.StrictMode>,
   document.getElementById('root')
 );
