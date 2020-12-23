@@ -1,6 +1,6 @@
 import {backendLookup} from '../lookup'
 
-export function apiTweetCrete(newTweet, callBack){
+export function apiTweetCreate(newTweet, callBack){
   backendLookup('POST', '/tweets/create/', callBack, {content: newTweet})
 }
 
